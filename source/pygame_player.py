@@ -1,12 +1,6 @@
 """
- Pygame base template for opening a window
+ Pygame player
 
- Sample Python/Pygame Programs
- Simpson College Computer Science
- http://programarcadegames.com/
- http://simpson.edu/computer-science/
-
- Explanation video: http://youtu.be/vRB_983kUMc
 """
 
 import pygame
@@ -17,6 +11,26 @@ WHITE = (255, 255, 255)
 GREEN = (0, 255, 0)
 RED = (255, 0, 0)
 
+
+class Player(pygame.sprite.Sprite):
+    def __init__(self):
+
+        # Initialize base class
+        super(Player, self).__init__()
+
+        width = 40
+        height = 60
+
+        self.image = pygame.Surface([width,height])
+        self.image.fill(RED)
+
+        self.rect = self.image.get_rect()
+
+    def update(self):
+        pass
+
+
+
 def main():
     pygame.init()
 
@@ -25,6 +39,17 @@ def main():
     screen = pygame.display.set_mode(size)
 
     pygame.display.set_caption("My Game")
+
+    # Create the player
+    player = Player()
+
+    # Create the sprite group
+    active_sprite_list = pygame.sprite.Group()
+
+    player.rect.x = 100
+    player.rect.y = 100
+
+    active_sprite_list.add(player)
 
     # Loop until the user clicks the close button.
     done = False
@@ -40,6 +65,7 @@ def main():
                 done = True
 
         # --- Game logic should go here
+        active_sprite_list.update()
 
         # --- Screen-clearing code goes here
 
@@ -51,6 +77,7 @@ def main():
         screen.fill(WHITE)
 
         # --- Drawing code should go here
+        active_sprite_list.draw(screen)
 
         # --- Go ahead and update the screen with what we've drawn.
         pygame.display.flip()
