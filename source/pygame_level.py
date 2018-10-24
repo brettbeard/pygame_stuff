@@ -25,7 +25,7 @@ class Player(pygame.sprite.Sprite):
         width = 40
         height = 60
 
-        self.image = pygame.Surface([width,height])
+        self.image = pygame.Surface([width, height])
         self.image.fill(RED)
 
         self.rect = self.image.get_rect()
@@ -33,12 +33,30 @@ class Player(pygame.sprite.Sprite):
         self.change_x = 0
         self.change_y = 0
 
+        self.level = None
+
     def update(self):
         self.calculate_gravity()
 
         self.rect.x += self.change_x
 
+        hit_list = pygame.sprite.spritecollide(self, self.level.platform_list, False)
+        for item in hit_list:
+            if self.change_x > 0:
+                self.rect.right = item.rect.left
+            elif self.change_x < 0:
+                self.rect.left = item.rect.right
+
         self.rect.y += self.change_y
+
+        hit_list = pygame.sprite.spritecollide(self, self.level.platform_list, False)
+        for item in hit_list:
+            if self.change_y > 0:
+                self.rect.bottom = item.rect.top
+            elif self.change_y < 0:
+                self.rect.top = item.rect.bottom
+
+            self.change_y = 0
 
     def go_left(self):
         self.change_x = -6
@@ -64,6 +82,45 @@ class Player(pygame.sprite.Sprite):
             self.rect.y = SCREEN_HEIGHT - self.rect.height
 
 
+class Platform(pygame.sprite.Sprite):
+    def __init__(self, width, height):
+        # Initialize base class
+        super(Platform, self).__init__()
+
+        self.image = pygame.Surface([width, height])
+        self.image.fill(GREEN)
+
+        self.rect = self.image.get_rect()
+
+
+class Level(object):
+    def __init__(self):
+        self.platform_list = pygame.sprite.Group()
+
+    def update(self):
+        self.platform_list.update()
+
+    def draw(self, screen):
+        screen.fill(BLUE)
+        self.platform_list.draw(screen)
+
+
+class Level01(Level):
+    def __init__(self):
+
+        Level.__init__(self)
+
+        levels = [[210, 70, 500, 500],
+                  [210, 70, 200, 400],
+                  [210, 70, 600, 300]]
+
+        for level in levels:
+            platform = Platform(level[0], level[1])
+            platform.rect.x = level[2]
+            platform.rect.y = level[3]
+            self.platform_list.add(platform)
+
+
 def main():
     pygame.init()
 
@@ -75,6 +132,10 @@ def main():
 
     # Create the player
     player = Player()
+
+    level = Level01()
+
+    player.level = level
 
     # Create the sprite group
     active_sprite_list = pygame.sprite.Group()
@@ -114,6 +175,9 @@ def main():
         # --- Game logic should go here
         active_sprite_list.update()
 
+        # Update the level
+        level.update()
+
         # --- Screen-clearing code goes here
 
         # Here, we clear the screen to white. Don't put other drawing commands
@@ -121,9 +185,10 @@ def main():
 
         # If you want a background image, replace this clear with blit'ing the
         # background image.
-        screen.fill(WHITE)
+        #screen.fill(WHITE)
 
         # --- Drawing code should go here
+        level.draw(screen)
         active_sprite_list.draw(screen)
 
         # --- Go ahead and update the screen with what we've drawn.
